@@ -1,0 +1,95 @@
+
+
+## 🧩 Context: Region Tuple Exploration in Timed Automata
+
+In exploring symbolic executions of timed automata, we often track sets of region states across locations using **tuples of the form**:
+
+$$
+C = \{ (q_1, r_{q_1}), (q_2, r_{q_2}), \dots \}
+$$
+
+That is, for each **location** $q$, a region abstraction $r_q$ tracks the local clock valuations relevant to enabled transitions.
+
+A subtle but important issue arises when:
+
+* The same location $q$ may be revisited via **different paths**, resulting in **different region states** $r_q$ and $r_q'$,
+* But only **one region state per location** is allowed in a tuple,
+* And we want to avoid **exponential blowup** while **preserving completeness**.
+
+---
+
+## 🔧 Original Problem: Missed Enabling Due to Local Test
+
+In one strategy, we **only add a new region state** $r_q'$ to a tuple (that already contains $r_q$) **if** $r_q'$ enables a **new local transition** from $q$. This is an efficient check.
+
+However, this local check can **fail to detect necessary transitions** when:
+
+* Two region states $r_q$ and $r_q'$ **both enable the same local transitions**, but
+* **Only $r_q'$** leads, down the line, to enabling a **new global transition** such as $\tau_7$.
+
+### 🔍 Example: What Happens When We Remove the Clock Constraint?
+
+Suppose you have a transition $\tau_6$ from location $q_2$ that was originally guarded with $y \leq 0$, and you remove this constraint. Now, **any region** $r_{q_2}$ satisfies the guard of $\tau_6$, i.e., $\tau_6$ becomes always enabled.
+
+This has a critical side-effect:
+
+* Both region states $r_{q_2}^{(1)}$ and $r_{q_2}^{(2)}$ **enable $\tau_6$**.
+* So, the local-enablement test sees **no “new” transition** from adding $r_{q_2}^{(2)}$ → and skips it.
+* But: **Only** $r_{q_2}^{(2)}$ leads (via a chain) to a global state that enables **$\tau_7$**.
+
+This causes the exploration to **miss reachable transitions**, violating **completeness**.
+
+---
+
+## ✅ Solution: Combined Strategy (Multi-region + Replacement)
+
+To resolve this and still stay within **PSPACE bounds**, we combine two ideas:
+
+### 📌 Strategy Overview
+
+Let $C$ be a tuple of region states.
+
+When a new region state $r_q'$ is discovered for some location $q$, and the tuple $C$ already contains $(q, r_q)$:
+
+#### Case 1: Local transition check passes
+
+If $r_q'$ enables a **new local transition** from $q$ not enabled by $r_q$:
+→ **Add $r_q'$ to the tuple**, i.e., allow **multiple region states** for $q$.
+
+#### Case 2: Local transition check fails
+
+If $r_q'$ enables **only the same transitions** as $r_q$:
+→ Explore two branches:
+
+* One where **$r_q$ is kept** (original tuple),
+* One where **$r_q$ is replaced by $r_q'$**.
+
+### 🧠 Why This Works
+
+* This ensures that even when region states **don’t distinguish local transitions**, we still explore paths that might be needed to **enable different global transitions**.
+* It avoids unnecessary explosion by:
+
+  * Adding new region states only when they help,
+  * Using replacement nondeterministically when not.
+
+---
+
+## 📏 Complexity: PSPACE Bound Holds
+
+* For each location $q$, we add at most **one region per locally enabled transition**.
+* Number of transitions per location $\leq T$, so maximum number of regions stored per location is $O(T)$.
+* So maximum size of a tuple is $O(L \cdot T)$, where $L$ is number of locations and $T$ number of transitions.
+* The total number of explored tuples is exponential in that → remains within **PSPACE**.
+
+---
+
+## 🧩 Formal Statement (for papers)
+
+> In our symbolic region-based exploration, we adopt a hybrid strategy:
+> (i) When a new region state enables a new local transition at a location, it is added alongside existing region states.
+> (ii) When a new region state enables only already-enabled local transitions, it nondeterministically replaces the old one.
+> This ensures that both local and global enabling conditions are captured, preserving completeness without increasing complexity beyond PSPACE.
+
+---
+
+Would you like a pseudocode version of this strategy for inclusion in an algorithm box or implementation?
