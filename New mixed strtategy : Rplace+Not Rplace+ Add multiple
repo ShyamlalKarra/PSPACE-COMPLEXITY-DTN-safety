@@ -1,0 +1,64 @@
+
+## ✅ Final Form of the Combined Strategy
+
+When visiting a location $q$ and encountering a **new region state** $r'_q$, and the current tuple $C$ already contains $(q, r_q)$, then you apply the following **three-way branching strategy**:
+
+---
+
+### 🔀 **Three Options** (Explore All Three Tuples)
+
+1. **Keep existing**:
+   $C$ remains unchanged with $(q, r_q)$.
+   → Use this if future transitions may still depend on $r_q$.
+
+2. **Replace**:
+   Construct tuple $C' = C \setminus \{(q, r_q)\} \cup \{(q, r'_q)\}$.
+   → Explore under the assumption that $r'_q$ might allow different future paths.
+
+3. **Add (multi-region)**:
+   Construct tuple $C'' = C \cup \{(q, r'_q)\}$.
+   → Only allowed if multiple region states per location are permitted.
+
+> 🚨 Of course, the **multi-region option** (3) should be subject to a guard: **only add** $r'_q$ if it enables **a new local transition** not enabled by any current region state for $q$. This keeps tuple size under control.
+
+---
+
+### 📏 Tuple Set Growth Control
+
+To ensure the number of tuples remains manageable (polynomial size tuples, exponential number of tuples):
+
+* You only grow the tuple in option (3) if it is **semantically useful** (i.e., enables a new local transition).
+* In options (1) and (2), you don’t increase tuple size — you explore via **branching**, not duplication.
+
+---
+
+### 📦 Storage and Exploration Summary
+
+Let:
+
+* $L$ be the number of locations,
+* $T$ be the number of transitions,
+* $R$ be the number of region equivalence classes.
+
+Then:
+
+* Per location $q$, at most $O(\deg(q)) \leq T$ region states are stored.
+* Tuple size is $O(L \cdot T)$,
+* The number of explored tuples is $2^{O(L \cdot T)}$,
+* So the **overall exploration remains in PSPACE**.
+
+---
+
+### ✍️ Formal Description (Ready to Use)
+
+> When a new region state $r'_q$ is encountered at location $q$, we construct up to three successor tuples:
+>
+> 1. A tuple keeping the existing region state $r_q$,
+> 2. A tuple replacing $r_q$ by $r'_q$,
+> 3. If $r'_q$ enables a locally new transition, a tuple including both $r_q$ and $r'_q$.
+>
+> This ensures that both local and global enabling conditions are preserved, without incurring a super-polynomial increase in tuple size.
+
+---
+
+Let me know if you'd like a transition system-style rule or algorithmic pseudocode version of this branching step.
