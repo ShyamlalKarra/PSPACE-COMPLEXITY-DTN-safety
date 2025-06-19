@@ -7,15 +7,15 @@ When visiting a location $q$ and encountering a **new region state** $r'_q$, and
 
 ### 🔀 **Three Options** (Explore All Three Tuples)
 
-1. **Keep existing**:
+1. **Keep existing**: (to make progress globally in future the origion region state  on q in tuple could unlock some transions where as  replacing region state on q could not)
    $C$ remains unchanged with $(q, r_q)$.
    → Use this if future transitions may still depend on $r_q$.
 
-2. **Replace**:
+2. **Replace**:(to make progress globally in future this replacing (new) region state on q  could take some transions where the original region state could not)
    Construct tuple $C' = C \setminus \{(q, r_q)\} \cup \{(q, r'_q)\}$.
    → Explore under the assumption that $r'_q$ might allow different future paths.
 
-3. **Add (multi-region)**:
+3. **Add (multi-region)**:( to make progress at local level i.e a q: check if the new region on q enables a new transiton out going q that none of the existing region states(of q) in the tuple  enable)
    Construct tuple $C'' = C \cup \{(q, r'_q)\}$.
    → Only allowed if multiple region states per location are permitted.
 
